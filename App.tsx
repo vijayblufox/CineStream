@@ -18,7 +18,6 @@ const App: React.FC = () => {
     const handleHashChange = () => {
       const path = window.location.hash.replace('#', '') || '/';
       setCurrentPath(path);
-      // Refresh data on navigation
       setArticles(getArticles());
       setSiteConfig(getSiteConfig());
       window.scrollTo(0, 0);
@@ -42,7 +41,14 @@ const App: React.FC = () => {
       if (article) return <ArticleDetail article={article} onNavigate={navigate} />;
     }
 
-    return <Home articles={articles} onArticleClick={(slug) => navigate(`/article/${slug}`)} />;
+    // Filter articles based on path if it's a category page
+    let filteredArticles = articles;
+    if (currentPath.startsWith('/category/')) {
+       const catSlug = currentPath.replace('/category/', '');
+       filteredArticles = articles.filter(a => a.category.toLowerCase().replace(/\s+/g, '-') === catSlug);
+    }
+
+    return <Home articles={filteredArticles} onArticleClick={(slug) => navigate(`/article/${slug}`)} />;
   };
 
   const isAdmin = currentPath === '/admin';
@@ -54,12 +60,6 @@ const App: React.FC = () => {
       <main className="flex-grow">
         {renderView()}
       </main>
-
-      {!isAdmin && (
-        <div className="fixed bottom-0 left-0 w-full z-40 md:hidden bg-white/95 backdrop-blur-sm border-t border-gray-200">
-           <AdUnit type="sticky-bottom" className="m-0 border-0" />
-        </div>
-      )}
 
       {!isAdmin && <Footer onNavigate={navigate} siteConfig={siteConfig} />}
     </div>

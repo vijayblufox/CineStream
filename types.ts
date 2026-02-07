@@ -10,7 +10,9 @@ export enum Platform {
   PRIME = 'Amazon Prime Video',
   HOTSTAR = 'Disney+ Hotstar',
   ZEE5 = 'ZEE5',
-  JIO = 'JioCinema',
+  SONYLIV = 'SonyLIV',
+  JIOHOTSTAR = 'JioHotstar',
+  AHA = 'Aha',
   THEATRICAL = 'Theatrical'
 }
 
@@ -20,6 +22,7 @@ export interface MovieListItem {
   description: string;
   imageUrl: string;
   videoUrl?: string;
+  platform?: Platform;
 }
 
 export interface Article {
