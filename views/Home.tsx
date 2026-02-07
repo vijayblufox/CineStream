@@ -83,7 +83,7 @@ const Home: React.FC<HomeProps> = ({ articles, onArticleClick }) => {
                       className="group cursor-pointer"
                     >
                        <div className="aspect-[2/3] rounded-xl overflow-hidden mb-4 border border-white/10">
-                          <img src={article.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          <img src={article.imageUrl} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                        </div>
                        <h3 className="font-bold text-lg leading-tight group-hover:text-red-400">{article.title}</h3>
                        <p className="text-gray-400 text-xs mt-2 uppercase font-semibold">{article.language.join(', ')}</p>

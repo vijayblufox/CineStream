@@ -38,7 +38,7 @@ const App: React.FC = () => {
     if (currentPath.startsWith('/article/')) {
       const slug = currentPath.replace('/article/', '');
       const article = articles.find(a => a.slug === slug);
-      if (article) return <ArticleDetail article={article} onNavigate={navigate} />;
+      if (article) return <ArticleDetail article={article} articles={articles} onNavigate={navigate} />;
     }
 
     // Filter articles based on path if it's a category page

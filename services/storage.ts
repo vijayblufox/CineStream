@@ -37,13 +37,13 @@ export const getSiteConfig = (): SiteConfig => {
       siteName: SITE_NAME,
       description: "India's leading guide for OTT releases and Cinema news.",
       footerText: "Your #1 destination for streaming dates and theatrical updates in India.",
-      whatsappLink: "#",
-      telegramLink: "#",
+      whatsappLink: "https://chat.whatsapp.com/example",
+      telegramLink: "https://t.me/example",
       socialLinks: {
-        facebook: "#",
-        twitter: "#",
-        instagram: "#",
-        youtube: "#"
+        facebook: "https://facebook.com/cinestream",
+        twitter: "https://twitter.com/cinestream",
+        instagram: "https://instagram.com/cinestream",
+        youtube: "https://youtube.com/cinestream"
       }
     };
     localStorage.setItem(CONFIG_KEY, JSON.stringify(defaultConfig));

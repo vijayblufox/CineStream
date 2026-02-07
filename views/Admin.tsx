@@ -4,7 +4,7 @@ import {
   Plus, Edit, Trash2, Save, X, LayoutDashboard, Settings, 
   LogOut, CheckCircle, Globe, Users, HelpCircle, Film, Upload, Video, Image as ImageIcon, 
   ListOrdered, LayoutTemplate, MonitorPlay, Sparkles, Calendar as CalendarIcon, 
-  ToggleRight, Star
+  ToggleRight, Star, Hash, MessageCircle, Send, Facebook, Twitter, Instagram, Youtube, Link
 } from 'lucide-react';
 import { Article, Category, Platform, SiteConfig, MovieListItem } from '../types.ts';
 import { 
@@ -134,6 +134,13 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleSaveConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveSiteConfig(siteConfig);
+    setSuccessMsg('Site-wide settings updated!');
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       deleteArticle(id);
@@ -185,7 +192,7 @@ const AdminPanel: React.FC = () => {
             <Plus className="h-5 w-5 mr-3" /> Create New
           </button>
           <button onClick={() => setView('settings')} className={`w-full flex items-center p-5 rounded-[2rem] transition-all ${view === 'settings' ? 'bg-red-50 text-red-600 font-black shadow-inner' : 'text-gray-400 hover:bg-gray-50 font-bold'}`}>
-            <Settings className="h-5 w-5 mr-3" /> Settings
+            <Settings className="h-5 w-5 mr-3" /> Site Settings
           </button>
         </nav>
         <div className="p-8">
@@ -196,7 +203,7 @@ const AdminPanel: React.FC = () => {
       <main className="flex-1 p-12 overflow-y-auto">
         <header className="flex justify-between items-center mb-12">
            <h2 className="text-4xl font-black text-gray-900 flex items-center gap-4">
-              {view === 'list' ? 'Content Feed' : view === 'settings' ? 'Global Parameters' : 'Editor Board'}
+              {view === 'list' ? 'Content Feed' : view === 'settings' ? 'Global Configuration' : 'Editor Board'}
               {view === 'edit' && <span className="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">{editingArticle?.category}</span>}
            </h2>
            {successMsg && <div className="bg-green-600 text-white px-8 py-3 rounded-full font-black animate-bounce shadow-xl">{successMsg}</div>}
@@ -234,11 +241,68 @@ const AdminPanel: React.FC = () => {
              </table>
           </div>
         ) : view === 'settings' ? (
-          <div className="bg-white p-20 rounded-[4rem] text-center border border-gray-100 shadow-xl">
-             <Settings className="h-20 w-20 text-gray-100 mx-auto mb-6" />
-             <h3 className="text-2xl font-black text-gray-900 mb-2">Global Settings under Lock</h3>
-             <p className="text-gray-400 font-medium">Contact system administrator for master configuration changes.</p>
-          </div>
+          <form onSubmit={handleSaveConfig} className="space-y-12 pb-24">
+             {/* General Branding */}
+             <section className="bg-white p-12 rounded-[3rem] shadow-2xl border border-gray-100">
+                <h3 className="text-2xl font-black mb-10 flex items-center gap-4 text-gray-900"><Globe className="h-8 w-8 text-red-600" /> Identity & SEO</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Site Name</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-black text-lg outline-none focus:border-red-600 transition-all" value={siteConfig.siteName} onChange={(e) => setSiteConfig({...siteConfig, siteName: e.target.value})} />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Footer Brand Text</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-black text-lg outline-none focus:border-red-600 transition-all" value={siteConfig.footerText} onChange={(e) => setSiteConfig({...siteConfig, footerText: e.target.value})} />
+                   </div>
+                   <div className="md:col-span-2 space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Global SEO Description</label>
+                      <textarea className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-medium text-lg outline-none focus:border-red-600 h-32" value={siteConfig.description} onChange={(e) => setSiteConfig({...siteConfig, description: e.target.value})} />
+                   </div>
+                </div>
+             </section>
+
+             {/* Communication & Community Links */}
+             <section className="bg-white p-12 rounded-[3rem] shadow-2xl border border-gray-100">
+                <h3 className="text-2xl font-black mb-10 flex items-center gap-4 text-gray-900"><MessageCircle className="h-8 w-8 text-red-600" /> Community Redirections</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><MessageCircle className="h-4 w-4 text-green-500" /> WhatsApp Group Link</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.whatsappLink} onChange={(e) => setSiteConfig({...siteConfig, whatsappLink: e.target.value})} />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Send className="h-4 w-4 text-blue-500" /> Telegram Channel Link</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.telegramLink} onChange={(e) => setSiteConfig({...siteConfig, telegramLink: e.target.value})} />
+                   </div>
+                </div>
+             </section>
+
+             {/* Social Presence */}
+             <section className="bg-white p-12 rounded-[3rem] shadow-2xl border border-gray-100">
+                <h3 className="text-2xl font-black mb-10 flex items-center gap-4 text-gray-900"><Link className="h-8 w-8 text-red-600" /> Social Networks</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Facebook className="h-4 w-4 text-blue-600" /> Facebook Page</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.socialLinks.facebook} onChange={(e) => setSiteConfig({...siteConfig, socialLinks: {...siteConfig.socialLinks, facebook: e.target.value}})} />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Twitter className="h-4 w-4 text-sky-400" /> X / Twitter Profile</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.socialLinks.twitter} onChange={(e) => setSiteConfig({...siteConfig, socialLinks: {...siteConfig.socialLinks, twitter: e.target.value}})} />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Instagram className="h-4 w-4 text-pink-500" /> Instagram Handle</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.socialLinks.instagram} onChange={(e) => setSiteConfig({...siteConfig, socialLinks: {...siteConfig.socialLinks, instagram: e.target.value}})} />
+                   </div>
+                   <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Youtube className="h-4 w-4 text-red-600" /> YouTube Channel</label>
+                      <input className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-xs outline-none focus:border-red-600" value={siteConfig.socialLinks.youtube} onChange={(e) => setSiteConfig({...siteConfig, socialLinks: {...siteConfig.socialLinks, youtube: e.target.value}})} />
+                   </div>
+                </div>
+             </section>
+
+             <button type="submit" className="w-full bg-red-600 text-white py-8 rounded-[2.5rem] font-black text-3xl hover:bg-red-700 shadow-3xl shadow-red-200 active:scale-95 transition-all">
+                Save Global Parameters
+             </button>
+          </form>
         ) : (
           <form onSubmit={handleSaveArticle} className="space-y-12">
             <section className="bg-white p-12 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">

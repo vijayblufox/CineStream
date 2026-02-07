@@ -4,6 +4,7 @@ import { Calendar, Tag, Share2, MessageSquare, PlayCircle, ChevronRight, ListOrd
 import { Article, Category, Platform } from '../types.ts';
 import Sidebar from '../components/Sidebar.tsx';
 import AdUnit from '../components/AdUnit.tsx';
+import ArticleCard from '../components/ArticleCard.tsx';
 import { updateSEOMeta } from '../services/storage.ts';
 
 const PLATFORM_THEMES: Record<string, { bg: string, text: string }> = {
@@ -19,10 +20,11 @@ const PLATFORM_THEMES: Record<string, { bg: string, text: string }> = {
 
 interface ArticleDetailProps {
   article: Article;
+  articles: Article[];
   onNavigate: (path: string) => void;
 }
 
-const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) => {
+const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, articles, onNavigate }) => {
   useEffect(() => {
     updateSEOMeta(article.title, article.excerpt);
     window.scrollTo(0, 0);
@@ -42,6 +44,11 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
   };
 
   const isOTTListicle = article.category === Category.OTT && article.movieList && article.movieList.length > 0;
+
+  // Logic for Related Articles
+  const relatedArticles = articles
+    .filter(a => a.id !== article.id && a.category === article.category)
+    .slice(0, 3);
 
   return (
     <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -69,7 +76,6 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                  <div className="h-14 w-14 rounded-3xl bg-gray-900 flex items-center justify-center mr-5 text-white font-black text-xl shadow-xl">CS</div>
                  <div>
                    <p className="text-gray-900 font-black text-xs uppercase tracking-widest">Editorial Team</p>
-                   {/* Added Sparkles import from lucide-react to fix 'Cannot find name' error */}
                    <p className="text-[10px] font-bold uppercase text-gray-400 mt-1 flex items-center gap-1"><Sparkles className="h-3 w-3 text-red-500" /> Cinema Analyst</p>
                  </div>
                </div>
@@ -87,10 +93,9 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
 
           {/* Featured Visual Hero */}
           <div className="relative aspect-[21/9] rounded-[3rem] overflow-hidden mb-20 shadow-3xl ring-12 ring-gray-50/50">
-            <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
+            <img src={article.imageUrl} alt={article.title} loading="lazy" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
             
-            {/* ONLY RENDER MAIN PLATFORM FOR MOVIE/NEWS */}
             {article.platform && article.category !== Category.OTT && (
               <div className="absolute bottom-12 left-12 text-white animate-in slide-in-from-left-10">
                 <span className="text-[10px] uppercase font-black tracking-[0.3em] opacity-60 mb-3 block">Global Premier Platform</span>
@@ -111,7 +116,6 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
             
             <div className="mb-20 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: article.content }} />
 
-            {/* DYNAMIC: MAIN TRAILER FOR MOVIE/NEWS */}
             {article.trailerUrl && article.category !== Category.OTT && (
                <div className="mb-24 animate-in fade-in">
                   <div className="flex items-center gap-4 mb-10">
@@ -131,7 +135,6 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                </div>
             )}
 
-            {/* DYNAMIC: LISTICLE CONTENT RENDERING (FOR OTT) */}
             {isOTTListicle && (
               <div className="mt-32 space-y-40">
                  <div className="flex items-center gap-6 mb-20">
@@ -168,7 +171,7 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                               
                               {item.imageUrl && (
                                 <div className="mb-14 rounded-[3.5rem] overflow-hidden shadow-3xl ring-8 ring-gray-50/50 group-hover:ring-red-50/50 transition-all duration-700 transform group-hover:-translate-y-2">
-                                   <img src={item.imageUrl} alt={item.title} className="w-full aspect-video object-cover transition-transform duration-1000 group-hover:scale-105" />
+                                   <img src={item.imageUrl} alt={item.title} loading="lazy" className="w-full aspect-video object-cover transition-transform duration-1000 group-hover:scale-105" />
                                 </div>
                               )}
                               
@@ -195,6 +198,21 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                    );
                  })}
               </div>
+            )}
+            
+            {/* Related Articles Section */}
+            {relatedArticles.length > 0 && (
+              <section className="mt-32 border-t pt-24">
+                <div className="flex items-center gap-4 mb-12">
+                  <Sparkles className="h-8 w-8 text-red-600" />
+                  <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900 m-0">More in {article.category}</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {relatedArticles.map(rel => (
+                    <ArticleCard key={rel.id} article={rel} onClick={() => onNavigate(`/article/${rel.slug}`)} />
+                  ))}
+                </div>
+              </section>
             )}
             
             <AdUnit type="infeed" className="my-32" />
