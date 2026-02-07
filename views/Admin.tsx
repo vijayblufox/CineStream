@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Edit, Trash2, Save, X, LayoutDashboard, Settings, 
   LogOut, CheckCircle, Globe, Users, HelpCircle, Film, Upload, Video, Image as ImageIcon, 
-  ListOrdered, LayoutTemplate, MonitorPlay
+  ListOrdered, LayoutTemplate, MonitorPlay, Sparkles
 } from 'lucide-react';
 import { Article, Category, Platform, SiteConfig, MovieListItem } from '../types.ts';
 import { 
@@ -84,10 +84,6 @@ const AdminPanel: React.FC = () => {
   const addMovieItem = () => {
     if (editingArticle) {
       const newList = [...(editingArticle.movieList || [])];
-      if (newList.length >= 10) {
-        alert("Maximum 10 movies allowed per blog listicle.");
-        return;
-      }
       newList.push({
         id: Math.random().toString(36).substr(2, 9),
         title: '',
@@ -129,14 +125,13 @@ const AdminPanel: React.FC = () => {
     if (editingArticle) {
       saveArticle(editingArticle as Article);
       setArticles(getArticles());
-      setSuccessMsg('Content Live!');
+      setSuccessMsg('Content Live & Synchronized!');
       setTimeout(() => setSuccessMsg(''), 3000);
       setView('list');
       setEditingArticle(null);
     }
   };
 
-  // Fixed the error by adding the missing handleDelete handler.
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this article?')) {
       deleteArticle(id);
@@ -148,17 +143,24 @@ const AdminPanel: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <form onSubmit={handleLogin} className="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
-          <h2 className="text-3xl font-black text-gray-900 mb-6 text-center">CineStream India</h2>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+        <form onSubmit={handleLogin} className="bg-white p-12 rounded-[3rem] shadow-2xl w-full max-w-md border border-white/10">
+          <div className="flex flex-col items-center mb-10">
+             <div className="bg-red-600 p-4 rounded-3xl mb-4 shadow-xl shadow-red-900/20">
+                <Film className="h-10 w-10 text-white" />
+             </div>
+             <h2 className="text-3xl font-black text-gray-900 brand-font">CineStream Admin</h2>
+             <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-2">Editorial Access Required</p>
+          </div>
           <input 
             type="password" 
-            placeholder="Admin Password" 
-            className="w-full p-4 border border-gray-200 rounded-2xl mb-4 text-center"
+            placeholder="Passcode" 
+            className="w-full p-5 bg-gray-50 border-2 border-gray-100 rounded-2xl mb-4 text-center font-black tracking-widest outline-none focus:border-red-600 transition-all"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoFocus
           />
-          <button className="w-full bg-red-600 text-white py-4 rounded-2xl font-black">Login</button>
+          <button className="w-full bg-red-600 text-white py-5 rounded-[2rem] font-black text-lg hover:bg-red-700 shadow-2xl shadow-red-200 transition-all active:scale-95">Enter Dashboard</button>
         </form>
       </div>
     );
@@ -166,44 +168,63 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-gray-200 hidden md:flex flex-col sticky top-0 h-screen">
-        <div className="p-8 border-b flex items-center gap-3">
-          <Film className="h-6 w-6 text-red-600" />
-          <h1 className="text-xl font-black">CMS Admin</h1>
+      {/* Premium Sidebar */}
+      <aside className="w-80 bg-white border-r border-gray-100 hidden md:flex flex-col sticky top-0 h-screen">
+        <div className="p-10 border-b flex items-center gap-4">
+          <div className="bg-red-600 p-2 rounded-xl">
+             <Film className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-black text-gray-900 brand-font">CMS</h1>
         </div>
-        <nav className="p-6 space-y-4">
-          <button onClick={() => setView('list')} className={`w-full flex items-center p-4 rounded-2xl ${view === 'list' ? 'bg-red-50 text-red-600 font-bold' : 'text-gray-500'}`}>
-            <LayoutDashboard className="h-5 w-5 mr-3" /> Dashboard
+        <nav className="flex-1 p-8 space-y-4">
+          <button onClick={() => setView('list')} className={`w-full flex items-center p-5 rounded-[2rem] transition-all ${view === 'list' ? 'bg-red-50 text-red-600 font-black shadow-inner' : 'text-gray-400 hover:bg-gray-50 font-bold'}`}>
+            <LayoutDashboard className="h-5 w-5 mr-3" /> Articles
           </button>
-          <button onClick={() => startEdit()} className={`w-full flex items-center p-4 rounded-2xl ${view === 'edit' ? 'bg-red-50 text-red-600 font-bold' : 'text-gray-500'}`}>
-            <Plus className="h-5 w-5 mr-3" /> New Post
+          <button onClick={() => startEdit()} className={`w-full flex items-center p-5 rounded-[2rem] transition-all ${view === 'edit' ? 'bg-red-50 text-red-600 font-black shadow-inner' : 'text-gray-400 hover:bg-gray-50 font-bold'}`}>
+            <Plus className="h-5 w-5 mr-3" /> Create New
+          </button>
+          <button onClick={() => setView('settings')} className={`w-full flex items-center p-5 rounded-[2rem] transition-all ${view === 'settings' ? 'bg-red-50 text-red-600 font-black shadow-inner' : 'text-gray-400 hover:bg-gray-50 font-bold'}`}>
+            <Settings className="h-5 w-5 mr-3" /> Settings
           </button>
         </nav>
+        <div className="p-8">
+           <button onClick={() => setIsAuthenticated(false)} className="w-full p-4 text-gray-400 font-black text-xs uppercase hover:text-red-600 transition-colors">Sign Out</button>
+        </div>
       </aside>
 
-      <main className="flex-1 p-10 overflow-y-auto">
-        {successMsg && <div className="bg-green-600 text-white p-4 rounded-2xl mb-8 font-bold">{successMsg}</div>}
+      <main className="flex-1 p-12 overflow-y-auto">
+        <header className="flex justify-between items-center mb-12">
+           <h2 className="text-4xl font-black text-gray-900 flex items-center gap-4">
+              {view === 'list' ? 'Content Feed' : view === 'settings' ? 'Global Parameters' : 'Editor Board'}
+              {view === 'edit' && <span className="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full uppercase tracking-widest">{editingArticle?.category}</span>}
+           </h2>
+           {successMsg && <div className="bg-green-600 text-white px-8 py-3 rounded-full font-black animate-bounce shadow-xl">{successMsg}</div>}
+        </header>
 
         {view === 'list' ? (
-          <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-[3rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
              <table className="w-full text-left">
-                <thead className="bg-gray-50">
-                  <tr className="text-[10px] font-black uppercase text-gray-400">
-                    <th className="px-8 py-6">Title</th>
-                    <th className="px-8 py-6">Category</th>
-                    <th className="px-8 py-6 text-right">Actions</th>
+                <thead className="bg-gray-50/50 border-b">
+                  <tr className="text-[10px] font-black uppercase text-gray-400 tracking-widest">
+                    <th className="px-10 py-8">Title & Slug</th>
+                    <th className="px-10 py-8">Category</th>
+                    <th className="px-10 py-8 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {articles.map(article => (
-                    <tr key={article.id}>
-                      <td className="px-8 py-6 font-bold">{article.title}</td>
-                      <td className="px-8 py-6 text-xs uppercase font-black">{article.category}</td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => startEdit(article)} className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Edit className="h-4 w-4" /></button>
-                          <button onClick={() => handleDelete(article.id)} className="p-2 bg-red-50 text-red-600 rounded-lg"><Trash2 className="h-4 w-4" /></button>
+                    <tr key={article.id} className="hover:bg-red-50/20 transition-colors group">
+                      <td className="px-10 py-8">
+                        <p className="font-black text-gray-900 text-xl group-hover:text-red-600 transition-colors">{article.title}</p>
+                        <p className="text-xs text-gray-400 font-mono mt-1">/{article.slug}</p>
+                      </td>
+                      <td className="px-10 py-8">
+                        <span className="text-[10px] font-black uppercase px-4 py-2 rounded-full bg-gray-100 text-gray-600">{article.category}</span>
+                      </td>
+                      <td className="px-10 py-8 text-right">
+                        <div className="flex justify-end gap-3">
+                          <button onClick={() => startEdit(article)} className="p-4 bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white transition-all"><Edit className="h-5 w-5" /></button>
+                          <button onClick={() => handleDelete(article.id)} className="p-4 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 hover:text-white transition-all"><Trash2 className="h-5 w-5" /></button>
                         </div>
                       </td>
                     </tr>
@@ -211,16 +232,27 @@ const AdminPanel: React.FC = () => {
                 </tbody>
              </table>
           </div>
+        ) : view === 'settings' ? (
+          <div className="bg-white p-20 rounded-[4rem] text-center border border-gray-100 shadow-xl">
+             <Settings className="h-20 w-20 text-gray-100 mx-auto mb-6" />
+             <h3 className="text-2xl font-black text-gray-900 mb-2">Global Settings under Lock</h3>
+             <p className="text-gray-400 font-medium">Contact system administrator for master configuration changes.</p>
+          </div>
         ) : (
-          <form onSubmit={handleSaveArticle} className="space-y-10 max-w-5xl">
-            <section className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
-               <h3 className="text-xl font-black mb-8 border-b pb-4">Article Configuration</h3>
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="md:col-span-2 space-y-2">
-                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Main Title</label>
+          <form onSubmit={handleSaveArticle} className="space-y-12">
+            {/* Primary Details Card */}
+            <section className="bg-white p-12 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8">
+                  <Sparkles className="h-10 w-10 text-red-50/50" />
+               </div>
+               <h3 className="text-2xl font-black mb-10 flex items-center gap-4 text-gray-900"><LayoutTemplate className="h-8 w-8 text-red-600" /> Identity & Routing</h3>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="md:col-span-2 space-y-4">
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Article Title</label>
                      <input 
                       required
-                      className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl font-black text-xl outline-none focus:border-red-600"
+                      className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-black text-2xl outline-none focus:border-red-600 focus:bg-white transition-all"
+                      placeholder="e.g. Best Netflix Movies to Watch Now"
                       value={editingArticle?.title || ''}
                       onChange={(e) => {
                         const title = e.target.value;
@@ -230,10 +262,10 @@ const AdminPanel: React.FC = () => {
                      />
                   </div>
 
-                  <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Blog Category</label>
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Category Segment</label>
                      <select 
-                      className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl font-bold"
+                      className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-black text-lg outline-none focus:border-red-600 focus:bg-white transition-all"
                       value={editingArticle?.category}
                       onChange={(e) => {
                         const cat = e.target.value as Category;
@@ -247,38 +279,43 @@ const AdminPanel: React.FC = () => {
                      </select>
                   </div>
 
-                  {/* ONLY FOR MOVIE RELEASES AND NEWS */}
+                  {/* DYNAMIC: MAIN PLATFORM ONLY FOR MOVIE/NEWS */}
                   {(editingArticle?.category === Category.MOVIE || editingArticle?.category === Category.NEWS) && (
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Main Platform</label>
-                       <select 
-                        className={`w-full p-5 rounded-2xl font-black text-white ${PLATFORM_COLORS[editingArticle?.platform || Platform.THEATRICAL]} transition-all`}
-                        value={editingArticle?.platform}
-                        onChange={(e) => setEditingArticle({...editingArticle!, platform: e.target.value as Platform})}
-                       >
-                          {Object.values(Platform).map(p => <option key={p} value={p}>{p}</option>)}
-                       </select>
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-5">
+                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Official Release Platform</label>
+                       <div className="flex gap-4">
+                          <select 
+                            className={`flex-1 p-6 rounded-3xl font-black text-white ${PLATFORM_COLORS[editingArticle?.platform || Platform.THEATRICAL]} shadow-lg transition-all outline-none`}
+                            value={editingArticle?.platform}
+                            onChange={(e) => setEditingArticle({...editingArticle!, platform: e.target.value as Platform})}
+                          >
+                             {Object.values(Platform).map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                          <div className="bg-gray-100 p-6 rounded-3xl flex items-center justify-center">
+                             <MonitorPlay className="h-6 w-6 text-gray-400" />
+                          </div>
+                       </div>
                     </div>
                   )}
 
-                  <div className="md:col-span-2 space-y-2">
-                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Feature Image</label>
+                  <div className="md:col-span-2 space-y-4">
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Cover Image</label>
                      <div className="flex gap-4">
-                        <input className="flex-1 p-5 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-mono" placeholder="Image URL..." value={editingArticle?.imageUrl || ''} onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})} />
-                        <label className="cursor-pointer bg-gray-900 text-white px-6 rounded-2xl flex items-center gap-2 font-bold text-sm">
-                           <Upload className="h-4 w-4" /> Upload
+                        <input className="flex-1 p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl text-sm font-mono outline-none focus:border-red-600 transition-all" placeholder="Paste URL..." value={editingArticle?.imageUrl || ''} onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})} />
+                        <label className="cursor-pointer bg-gray-900 text-white px-10 rounded-3xl flex items-center gap-3 font-black text-sm hover:bg-black transition-all">
+                           <Upload className="h-5 w-5" /> Import Local
                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => setEditingArticle({...editingArticle!, imageUrl: url}))} />
                         </label>
                      </div>
                   </div>
 
-                  {/* TRAILER FOR MOVIE/NEWS */}
+                  {/* DYNAMIC: TRAILER ONLY FOR MOVIE/NEWS */}
                   {(editingArticle?.category === Category.MOVIE || editingArticle?.category === Category.NEWS) && (
-                    <div className="md:col-span-2 space-y-2">
-                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Video className="h-4 w-4 text-red-600" /> Main Trailer / Video URL</label>
+                    <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-bottom-5">
+                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Video className="h-4 w-4 text-red-600" /> Theatrical Trailer (YouTube Link)</label>
                        <input 
-                        className="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl font-mono text-sm"
-                        placeholder="YouTube Link..."
+                        className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-sm outline-none focus:border-red-600"
+                        placeholder="e.g. https://www.youtube.com/watch?v=..."
                         value={editingArticle?.trailerUrl || ''}
                         onChange={(e) => setEditingArticle({...editingArticle!, trailerUrl: e.target.value})}
                        />
@@ -287,83 +324,104 @@ const AdminPanel: React.FC = () => {
                </div>
             </section>
 
-            {/* LISTICLE BUILDER FOR OTT RELEASES */}
+            {/* DYNAMIC: OTT LISTICLE BUILDER */}
             {editingArticle?.category === Category.OTT && (
-              <section className="bg-gray-900 p-10 rounded-[3rem] shadow-2xl">
-                 <div className="flex items-center justify-between mb-10">
+              <section className="bg-gray-950 p-16 rounded-[4rem] shadow-3xl relative">
+                 <div className="flex flex-col md:flex-row items-center justify-between mb-16">
                     <div>
-                       <h3 className="text-2xl font-black text-white flex items-center gap-3"><ListOrdered className="h-8 w-8 text-red-600" /> Movie Listicle Builder</h3>
-                       <p className="text-gray-500 font-bold text-xs uppercase tracking-widest mt-1">Add up to 10 movies</p>
+                       <h3 className="text-3xl font-black text-white flex items-center gap-4"><ListOrdered className="h-10 w-10 text-red-600" /> Listicle Content Generator</h3>
+                       <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em] mt-2">Individual Platform Mapping Active</p>
                     </div>
                     <button 
                       type="button" 
                       onClick={addMovieItem}
-                      className="bg-red-600 text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 hover:bg-red-700 shadow-xl shadow-red-200 active:scale-95 transition-all"
+                      className="bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black flex items-center gap-3 hover:bg-red-700 shadow-2xl shadow-red-900/40 active:scale-95 transition-all mt-6 md:mt-0"
                     >
-                      <Plus className="h-5 w-5" /> Add Movie
+                      <Plus className="h-6 w-6" /> New Movie Entry
                     </button>
                  </div>
 
-                 <div className="space-y-10">
+                 <div className="space-y-12">
                     {editingArticle?.movieList?.map((item, index) => (
-                      <div key={item.id} className="bg-white/5 border border-white/10 p-10 rounded-[2rem] relative">
-                         <div className="absolute -top-4 -left-4 bg-red-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg border-4 border-gray-900">
+                      <div key={item.id} className="bg-white/5 border-2 border-white/5 p-12 rounded-[3rem] relative animate-in fade-in slide-in-from-bottom-10">
+                         <div className="absolute -top-6 -left-6 bg-red-600 text-white w-16 h-16 rounded-[2rem] flex items-center justify-center font-black text-2xl shadow-2xl border-8 border-gray-950">
                             {index + 1}
                          </div>
-                         <button type="button" onClick={() => removeMovieItem(item.id)} className="absolute top-6 right-6 text-red-400 hover:text-white"><Trash2 className="h-5 w-5"/></button>
+                         <button type="button" onClick={() => removeMovieItem(item.id)} className="absolute top-8 right-8 text-gray-500 hover:text-red-500 transition-colors"><Trash2 className="h-6 w-6"/></button>
 
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Movie Title</label>
-                               <input className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white font-bold text-lg" value={item.title} onChange={(e) => updateMovieItem(item.id, 'title', e.target.value)} />
-                               
-                               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Target OTT Platform</label>
-                               <select 
-                                className={`w-full p-4 rounded-2xl font-black text-white ${PLATFORM_COLORS[item.platform || Platform.NETFLIX]} transition-all outline-none`}
-                                value={item.platform}
-                                onChange={(e) => updateMovieItem(item.id, 'platform', e.target.value as Platform)}
-                               >
-                                  {Object.values(Platform).filter(p => p !== Platform.THEATRICAL).map(p => <option key={p} value={p}>{p}</option>)}
-                               </select>
-                            </div>
-
-                            <div className="space-y-4">
-                               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Image / Banner</label>
-                               <div className="flex gap-2">
-                                  <input className="flex-1 p-4 bg-white/5 border border-white/10 rounded-2xl text-xs text-white" value={item.imageUrl} placeholder="URL or Upload" onChange={(e) => updateMovieItem(item.id, 'imageUrl', e.target.value)} />
-                                  <label className="cursor-pointer bg-white/10 p-4 rounded-2xl flex items-center justify-center">
-                                     <Upload className="h-5 w-5 text-gray-400" />
-                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => updateMovieItem(item.id, 'imageUrl', url))} />
-                                  </label>
+                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div className="space-y-6">
+                               <div className="space-y-3">
+                                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Movie Name</label>
+                                  <input className="w-full p-5 bg-white/5 border-2 border-white/10 rounded-2xl text-white font-black text-xl outline-none focus:border-red-600" placeholder="Movie Title" value={item.title} onChange={(e) => updateMovieItem(item.id, 'title', e.target.value)} />
                                </div>
-                               {item.imageUrl && <div className="h-20 w-full rounded-2xl overflow-hidden border border-white/10"><img src={item.imageUrl} className="w-full h-full object-cover"/></div>}
+                               
+                               <div className="space-y-3">
+                                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Streaming On</label>
+                                  <select 
+                                    className={`w-full p-5 rounded-2xl font-black text-white ${PLATFORM_COLORS[item.platform || Platform.NETFLIX]} shadow-xl transition-all border-none outline-none ring-4 ring-white/5`}
+                                    value={item.platform}
+                                    onChange={(e) => updateMovieItem(item.id, 'platform', e.target.value as Platform)}
+                                  >
+                                     {Object.values(Platform).filter(p => p !== Platform.THEATRICAL).map(p => <option key={p} value={p}>{p}</option>)}
+                                  </select>
+                               </div>
                             </div>
 
-                            <div className="md:col-span-2 space-y-4">
-                               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Video URL (Optional)</label>
-                               <input className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white text-xs font-mono" placeholder="YouTube Link..." value={item.videoUrl} onChange={(e) => updateMovieItem(item.id, 'videoUrl', e.target.value)} />
+                            <div className="space-y-6">
+                               <div className="space-y-3">
+                                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Media Preview</label>
+                                  <div className="flex gap-3">
+                                     <input className="flex-1 p-5 bg-white/5 border-2 border-white/10 rounded-2xl text-xs text-white/50" value={item.imageUrl} placeholder="Image Link" onChange={(e) => updateMovieItem(item.id, 'imageUrl', e.target.value)} />
+                                     <label className="cursor-pointer bg-white/10 p-5 rounded-2xl flex items-center justify-center hover:bg-white/20">
+                                        <Upload className="h-6 w-6 text-white" />
+                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => updateMovieItem(item.id, 'imageUrl', url))} />
+                                     </label>
+                                  </div>
+                                  {item.imageUrl && (
+                                     <div className="h-24 w-full rounded-2xl overflow-hidden border-2 border-white/10 mt-2">
+                                        <img src={item.imageUrl} className="w-full h-full object-cover opacity-80" />
+                                     </div>
+                                  )}
+                               </div>
+                            </div>
+
+                            <div className="lg:col-span-2 space-y-6">
+                               <div className="space-y-3">
+                                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Specific Trailer (Optional)</label>
+                                  <input className="w-full p-5 bg-white/5 border-2 border-white/10 rounded-2xl text-white text-xs font-mono outline-none focus:border-red-600" placeholder="YouTube URL" value={item.videoUrl} onChange={(e) => updateMovieItem(item.id, 'videoUrl', e.target.value)} />
+                               </div>
                                
-                               <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Movie Review / Description</label>
-                               <textarea className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl text-white h-32 leading-relaxed" placeholder="Write why this movie is worth watching..." value={item.description} onChange={(e) => updateMovieItem(item.id, 'description', e.target.value)} />
+                               <div className="space-y-3">
+                                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Expert Opinion / Review</label>
+                                  <textarea className="w-full p-6 bg-white/5 border-2 border-white/10 rounded-2xl text-white h-48 leading-relaxed outline-none focus:border-red-600" placeholder="Why is this movie in your Top 10?" value={item.description} onChange={(e) => updateMovieItem(item.id, 'description', e.target.value)} />
+                               </div>
                             </div>
                          </div>
                       </div>
                     ))}
+                    {(!editingArticle.movieList || editingArticle.movieList.length === 0) && (
+                       <div className="text-center py-20 text-gray-600 border-4 border-dashed border-white/5 rounded-[3rem]">
+                          No entries added. Use the button above to build your Top List.
+                       </div>
+                    )}
                  </div>
               </section>
             )}
 
-            <section className="bg-white p-10 rounded-[2rem] border border-gray-100 shadow-sm">
-               <h3 className="text-xl font-black mb-8 border-b pb-4">Full Blog Content</h3>
-               <textarea required className="w-full p-8 bg-gray-50 border border-gray-200 rounded-[2rem] h-96 text-lg leading-relaxed outline-none focus:border-red-600" value={editingArticle?.content || ''} onChange={(e) => setEditingArticle({...editingArticle!, content: e.target.value})} />
+            {/* Global Content Editor */}
+            <section className="bg-white p-12 rounded-[3rem] shadow-xl border border-gray-100">
+               <h3 className="text-2xl font-black mb-10 border-b pb-6">Editorial Narration</h3>
+               <textarea required className="w-full p-10 bg-gray-50 border-2 border-gray-100 rounded-[3rem] h-96 text-xl leading-relaxed outline-none focus:border-red-600 focus:bg-white transition-all" placeholder="Introduction, insights, and conclusions..." value={editingArticle?.content || ''} onChange={(e) => setEditingArticle({...editingArticle!, content: e.target.value})} />
             </section>
 
-            <div className="flex gap-6 pb-20">
-              <button type="submit" className="flex-1 bg-red-600 text-white py-6 rounded-[2rem] font-black text-2xl hover:bg-red-700 shadow-2xl active:scale-95 transition-all">
-                Publish Blog Post
+            {/* Submission Actions */}
+            <div className="flex gap-6 pb-24">
+              <button type="submit" className="flex-1 bg-red-600 text-white py-8 rounded-[2.5rem] font-black text-3xl hover:bg-red-700 shadow-3xl shadow-red-200 active:scale-95 transition-all">
+                Broadcast Content
               </button>
-              <button type="button" onClick={() => setView('list')} className="px-12 bg-gray-100 text-gray-600 py-6 rounded-[2rem] font-black text-xl hover:bg-gray-200 transition-all">
-                Discard Draft
+              <button type="button" onClick={() => setView('list')} className="px-16 bg-gray-100 text-gray-500 py-8 rounded-[2.5rem] font-black text-xl hover:bg-gray-200 transition-all">
+                Cancel Session
               </button>
             </div>
           </form>
