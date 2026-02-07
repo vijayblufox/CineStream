@@ -35,8 +35,8 @@ export const getSiteConfig = (): SiteConfig => {
   if (!stored) {
     const defaultConfig: SiteConfig = {
       siteName: SITE_NAME,
-      description: "A high-performance, SEO-optimized blog platform dedicated to Indian cinema, OTT releases, and entertainment news.",
-      footerText: "India's leading destination for movie news, OTT release dates, and entertainment updates.",
+      description: "India's leading guide for OTT releases and Cinema news.",
+      footerText: "Your #1 destination for streaming dates and theatrical updates in India.",
       whatsappLink: "#",
       telegramLink: "#",
       socialLinks: {

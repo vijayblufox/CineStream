@@ -7,14 +7,14 @@ import AdUnit from '../components/AdUnit.tsx';
 import { updateSEOMeta } from '../services/storage.ts';
 
 const PLATFORM_THEMES: Record<string, { bg: string, text: string }> = {
-  [Platform.NETFLIX]: { bg: 'bg-red-600', text: 'text-white' },
-  [Platform.PRIME]: { bg: 'bg-blue-500', text: 'text-white' },
-  [Platform.HOTSTAR]: { bg: 'bg-blue-900', text: 'text-white' },
-  [Platform.ZEE5]: { bg: 'bg-purple-600', text: 'text-white' },
-  [Platform.SONYLIV]: { bg: 'bg-indigo-700', text: 'text-white' },
-  [Platform.JIOHOTSTAR]: { bg: 'bg-blue-800', text: 'text-white' },
-  [Platform.AHA]: { bg: 'bg-orange-600', text: 'text-white' },
-  [Platform.THEATRICAL]: { bg: 'bg-gray-900', text: 'text-white' },
+  [Platform.NETFLIX]: { bg: 'bg-[#E50914]', text: 'text-white' },
+  [Platform.PRIME]: { bg: 'bg-[#00A8E1]', text: 'text-white' },
+  [Platform.HOTSTAR]: { bg: 'bg-[#001A33]', text: 'text-white' },
+  [Platform.ZEE5]: { bg: 'bg-[#8230c6]', text: 'text-white' },
+  [Platform.SONYLIV]: { bg: 'bg-[#2e3192]', text: 'text-white' },
+  [Platform.JIOHOTSTAR]: { bg: 'bg-[#0a2754]', text: 'text-white' },
+  [Platform.AHA]: { bg: 'bg-[#ff4500]', text: 'text-white' },
+  [Platform.THEATRICAL]: { bg: 'bg-[#000000]', text: 'text-white' },
 };
 
 interface ArticleDetailProps {
@@ -40,9 +40,10 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
+  const isOTTListicle = article.category === Category.OTT && article.movieList && article.movieList.length > 0;
+
   return (
     <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Breadcrumbs */}
       <nav className="flex items-center text-[10px] text-gray-400 mb-8 font-black uppercase tracking-[0.2em]">
          <button onClick={() => onNavigate('/')} className="hover:text-red-600 transition-colors">Home</button>
          <ChevronRight className="h-3 w-3 mx-3" />
@@ -66,13 +67,13 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mr-4 text-white font-black text-lg shadow-lg">CS</div>
                  <div>
                    <p className="text-gray-900 font-black text-xs uppercase tracking-widest">Editorial Team</p>
-                   <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Verified Expert Review</p>
+                   <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Verified Cinema Expert</p>
                  </div>
                </div>
                <div className="flex items-center gap-6">
-                  <div className="flex items-center font-bold text-gray-400 text-xs">
+                  <div className="flex items-center font-bold text-gray-400 text-xs uppercase">
                      <Calendar className="h-4 w-4 mr-2" />
-                     {new Date(article.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                     {new Date(article.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}
                   </div>
                   <button className="flex items-center hover:text-red-600 font-bold text-xs uppercase transition-colors">
                     <Share2 className="h-4 w-4 mr-2" /> Share
@@ -84,15 +85,15 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
           <div className="relative aspect-[21/9] rounded-[2.5rem] overflow-hidden mb-16 shadow-2xl ring-8 ring-gray-50">
             <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-            {article.platform && (
+            {article.platform && article.category !== Category.OTT && (
               <div className="absolute bottom-10 left-10 text-white">
-                <span className="text-[10px] uppercase font-black tracking-widest opacity-70 mb-2 block">Streaming On</span>
-                <p className="text-4xl font-black flex items-center gap-3">
-                   <div className={`p-2 rounded-xl ${PLATFORM_THEMES[article.platform].bg}`}>
+                <span className="text-[10px] uppercase font-black tracking-widest opacity-70 mb-2 block">Official Release</span>
+                <div className="flex items-center gap-4">
+                   <div className={`p-3 rounded-2xl ${PLATFORM_THEMES[article.platform].bg} shadow-lg`}>
                       <MonitorPlay className="h-6 w-6" />
                    </div>
-                   {article.platform}
-                </p>
+                   <p className="text-4xl font-black">{article.platform}</p>
+                </div>
               </div>
             )}
           </div>
@@ -104,17 +105,35 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
             
             <div className="mb-16 text-lg" dangerouslySetInnerHTML={{ __html: article.content }} />
 
-            {/* LISTICLE CONTENT RENDERING */}
-            {article.movieList && article.movieList.length > 0 && (
+            {/* MAIN TRAILER FOR MOVIE/NEWS */}
+            {article.trailerUrl && article.category !== Category.OTT && (
+               <div className="mb-16">
+                  <h2 className="text-2xl font-black uppercase mb-6 flex items-center gap-3">
+                     <PlayCircle className="h-8 w-8 text-red-600" /> Watch Official Trailer
+                  </h2>
+                  <div className="aspect-video rounded-[2rem] overflow-hidden bg-black shadow-2xl">
+                     <iframe 
+                        className="w-full h-full"
+                        src={getEmbedUrl(article.trailerUrl) || ''}
+                        title="Trailer"
+                        frameBorder="0"
+                        allowFullScreen
+                     ></iframe>
+                  </div>
+               </div>
+            )}
+
+            {/* LISTICLE CONTENT RENDERING (FOR OTT) */}
+            {isOTTListicle && (
               <div className="mt-20 space-y-24">
                  <div className="flex items-center gap-4 mb-16">
                     <div className="bg-red-600 text-white p-3 rounded-2xl shadow-xl shadow-red-200">
                        <ListOrdered className="h-8 w-8" />
                     </div>
-                    <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter m-0">Recommended List</h2>
+                    <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tighter m-0">Recommended OTT List</h2>
                  </div>
 
-                 {article.movieList.map((item, index) => {
+                 {article.movieList?.map((item, index) => {
                    const embedUrl = getEmbedUrl(item.videoUrl);
                    const theme = item.platform ? PLATFORM_THEMES[item.platform] : PLATFORM_THEMES[Platform.NETFLIX];
                    
@@ -122,7 +141,7 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                      <section key={item.id} className="relative group scroll-mt-24">
                         <div className="flex flex-col md:flex-row gap-10 items-start">
                            <div className="flex-shrink-0 relative">
-                              <div className="bg-red-600 text-white w-16 h-16 rounded-3xl flex items-center justify-center font-black text-3xl shadow-2xl shadow-red-200 border-4 border-white mb-6">
+                              <div className="bg-red-600 text-white w-16 h-16 rounded-3xl flex items-center justify-center font-black text-3xl shadow-2xl border-4 border-white mb-6">
                                  {index + 1}
                               </div>
                            </div>
@@ -132,7 +151,7 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                                     {item.title}
                                  </h3>
                                  {item.platform && (
-                                   <div className={`${theme.bg} ${theme.text} px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2`}>
+                                   <div className={`${theme.bg} ${theme.text} px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center gap-2`}>
                                       <MonitorPlay className="h-4 w-4" />
                                       {item.platform}
                                    </div>
@@ -157,7 +176,6 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
                                          src={embedUrl}
                                          title={item.title}
                                          frameBorder="0"
-                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                          allowFullScreen
                                       ></iframe>
                                    </div>

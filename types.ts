@@ -42,9 +42,9 @@ export interface Article {
   isFeatured?: boolean;
   publishedAt: string;
   faqs?: { q: string, a: string }[];
-  trailerUrl?: string;
+  trailerUrl?: string; // For single movie/news articles
   rating?: string;
-  movieList?: MovieListItem[];
+  movieList?: MovieListItem[]; // For OTT listicles
 }
 
 export interface SiteConfig {
