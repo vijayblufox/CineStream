@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Edit, Trash2, Save, X, LayoutDashboard, Settings, 
   LogOut, CheckCircle, Globe, Users, HelpCircle, Film, Upload, Video, Image as ImageIcon, 
-  ListOrdered, LayoutTemplate, MonitorPlay, Sparkles
+  ListOrdered, LayoutTemplate, MonitorPlay, Sparkles, Calendar as CalendarIcon, 
+  ToggleRight, Star
 } from 'lucide-react';
 import { Article, Category, Platform, SiteConfig, MovieListItem } from '../types.ts';
 import { 
@@ -65,7 +66,8 @@ const AdminPanel: React.FC = () => {
       publishedAt: new Date().toISOString(),
       faqs: [{ q: '', a: '' }],
       movieList: [],
-      trailerUrl: ''
+      trailerUrl: '',
+      isFeatured: false
     });
     setView('edit');
   };
@@ -168,7 +170,6 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Premium Sidebar */}
       <aside className="w-80 bg-white border-r border-gray-100 hidden md:flex flex-col sticky top-0 h-screen">
         <div className="p-10 border-b flex items-center gap-4">
           <div className="bg-red-600 p-2 rounded-xl">
@@ -240,7 +241,6 @@ const AdminPanel: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleSaveArticle} className="space-y-12">
-            {/* Primary Details Card */}
             <section className="bg-white p-12 rounded-[3rem] shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
                <div className="absolute top-0 right-0 p-8">
                   <Sparkles className="h-10 w-10 text-red-50/50" />
@@ -279,7 +279,6 @@ const AdminPanel: React.FC = () => {
                      </select>
                   </div>
 
-                  {/* DYNAMIC: MAIN PLATFORM ONLY FOR MOVIE/NEWS */}
                   {(editingArticle?.category === Category.MOVIE || editingArticle?.category === Category.NEWS) && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-5">
                        <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Official Release Platform</label>
@@ -298,24 +297,58 @@ const AdminPanel: React.FC = () => {
                     </div>
                   )}
 
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2">
+                        <CalendarIcon className="h-3 w-3" /> Planned Release Date
+                     </label>
+                     <div className="relative group">
+                        <input 
+                          type="date"
+                          className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-black text-lg outline-none focus:border-red-600 focus:bg-white transition-all appearance-none"
+                          value={editingArticle?.releaseDate || ''}
+                          onChange={(e) => setEditingArticle({...editingArticle!, releaseDate: e.target.value})}
+                        />
+                        <CalendarIcon className="absolute right-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-300 pointer-events-none group-focus-within:text-red-600 transition-colors" />
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Featured Status</label>
+                     <div 
+                       onClick={() => setEditingArticle({...editingArticle!, isFeatured: !editingArticle?.isFeatured})}
+                       className={`flex items-center justify-between p-5 rounded-3xl border-2 cursor-pointer transition-all duration-300 ${editingArticle?.isFeatured ? 'bg-red-50 border-red-200 shadow-lg shadow-red-100/50' : 'bg-gray-50 border-gray-100'}`}
+                     >
+                        <div className="flex items-center gap-3">
+                           <div className={`p-2 rounded-xl ${editingArticle?.isFeatured ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
+                              <Star className="h-4 w-4" />
+                           </div>
+                           <span className={`font-black text-xs uppercase tracking-widest ${editingArticle?.isFeatured ? 'text-red-600' : 'text-gray-400'}`}>
+                              {editingArticle?.isFeatured ? 'Home Spotlight' : 'Standard'}
+                           </span>
+                        </div>
+                        <div className={`w-14 h-8 rounded-full relative transition-colors duration-500 shadow-inner ${editingArticle?.isFeatured ? 'bg-red-600' : 'bg-gray-300'}`}>
+                           <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-500 transform ${editingArticle?.isFeatured ? 'translate-x-7' : 'translate-x-1'}`} />
+                        </div>
+                     </div>
+                  </div>
+
                   <div className="md:col-span-2 space-y-4">
-                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Cover Image</label>
+                     <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Feature Media URL</label>
                      <div className="flex gap-4">
-                        <input className="flex-1 p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl text-sm font-mono outline-none focus:border-red-600 transition-all" placeholder="Paste URL..." value={editingArticle?.imageUrl || ''} onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})} />
+                        <input className="flex-1 p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl text-sm font-mono outline-none focus:border-red-600 transition-all" placeholder="Paste CDN URL..." value={editingArticle?.imageUrl || ''} onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})} />
                         <label className="cursor-pointer bg-gray-900 text-white px-10 rounded-3xl flex items-center gap-3 font-black text-sm hover:bg-black transition-all">
-                           <Upload className="h-5 w-5" /> Import Local
+                           <Upload className="h-5 w-5" /> Browse
                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => setEditingArticle({...editingArticle!, imageUrl: url}))} />
                         </label>
                      </div>
                   </div>
 
-                  {/* DYNAMIC: TRAILER ONLY FOR MOVIE/NEWS */}
                   {(editingArticle?.category === Category.MOVIE || editingArticle?.category === Category.NEWS) && (
                     <div className="md:col-span-2 space-y-4 animate-in fade-in slide-in-from-bottom-5">
-                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Video className="h-4 w-4 text-red-600" /> Theatrical Trailer (YouTube Link)</label>
+                       <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest flex items-center gap-2"><Video className="h-4 w-4 text-red-600" /> Embedded Trailer Link</label>
                        <input 
                         className="w-full p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl font-mono text-sm outline-none focus:border-red-600"
-                        placeholder="e.g. https://www.youtube.com/watch?v=..."
+                        placeholder="https://www.youtube.com/watch?v=..."
                         value={editingArticle?.trailerUrl || ''}
                         onChange={(e) => setEditingArticle({...editingArticle!, trailerUrl: e.target.value})}
                        />
@@ -324,20 +357,19 @@ const AdminPanel: React.FC = () => {
                </div>
             </section>
 
-            {/* DYNAMIC: OTT LISTICLE BUILDER */}
             {editingArticle?.category === Category.OTT && (
               <section className="bg-gray-950 p-16 rounded-[4rem] shadow-3xl relative">
                  <div className="flex flex-col md:flex-row items-center justify-between mb-16">
                     <div>
-                       <h3 className="text-3xl font-black text-white flex items-center gap-4"><ListOrdered className="h-10 w-10 text-red-600" /> Listicle Content Generator</h3>
-                       <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em] mt-2">Individual Platform Mapping Active</p>
+                       <h3 className="text-3xl font-black text-white flex items-center gap-4"><ListOrdered className="h-10 w-10 text-red-600" /> OTT Listicle Editor</h3>
+                       <p className="text-gray-500 font-bold text-xs uppercase tracking-[0.2em] mt-2">Maximum 10 entries per listicle</p>
                     </div>
                     <button 
                       type="button" 
                       onClick={addMovieItem}
                       className="bg-red-600 text-white px-10 py-5 rounded-[2rem] font-black flex items-center gap-3 hover:bg-red-700 shadow-2xl shadow-red-900/40 active:scale-95 transition-all mt-6 md:mt-0"
                     >
-                      <Plus className="h-6 w-6" /> New Movie Entry
+                      <Plus className="h-6 w-6" /> Add New Movie
                     </button>
                  </div>
 
@@ -400,28 +432,21 @@ const AdminPanel: React.FC = () => {
                          </div>
                       </div>
                     ))}
-                    {(!editingArticle.movieList || editingArticle.movieList.length === 0) && (
-                       <div className="text-center py-20 text-gray-600 border-4 border-dashed border-white/5 rounded-[3rem]">
-                          No entries added. Use the button above to build your Top List.
-                       </div>
-                    )}
                  </div>
               </section>
             )}
 
-            {/* Global Content Editor */}
             <section className="bg-white p-12 rounded-[3rem] shadow-xl border border-gray-100">
                <h3 className="text-2xl font-black mb-10 border-b pb-6">Editorial Narration</h3>
                <textarea required className="w-full p-10 bg-gray-50 border-2 border-gray-100 rounded-[3rem] h-96 text-xl leading-relaxed outline-none focus:border-red-600 focus:bg-white transition-all" placeholder="Introduction, insights, and conclusions..." value={editingArticle?.content || ''} onChange={(e) => setEditingArticle({...editingArticle!, content: e.target.value})} />
             </section>
 
-            {/* Submission Actions */}
             <div className="flex gap-6 pb-24">
               <button type="submit" className="flex-1 bg-red-600 text-white py-8 rounded-[2.5rem] font-black text-3xl hover:bg-red-700 shadow-3xl shadow-red-200 active:scale-95 transition-all">
-                Broadcast Content
+                Publish Update
               </button>
               <button type="button" onClick={() => setView('list')} className="px-16 bg-gray-100 text-gray-500 py-8 rounded-[2.5rem] font-black text-xl hover:bg-gray-200 transition-all">
-                Cancel Session
+                Cancel
               </button>
             </div>
           </form>
