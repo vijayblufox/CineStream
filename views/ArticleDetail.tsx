@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { Calendar, Tag, Share2, MessageSquare, PlayCircle, ChevronRight } from 'lucide-react';
+import { Calendar, Tag, Share2, MessageSquare, PlayCircle, ChevronRight, ExternalLink } from 'lucide-react';
 import { Article, Category } from '../types.ts';
 import Sidebar from '../components/Sidebar.tsx';
 import AdUnit from '../components/AdUnit.tsx';
@@ -16,13 +16,25 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
     updateSEOMeta(article.title, article.excerpt);
   }, [article]);
 
+  // Helper to extract YouTube ID for embedding
+  const getEmbedUrl = (url?: string) => {
+    if (!url) return null;
+    let videoId = '';
+    if (url.includes('v=')) {
+      videoId = url.split('v=')[1].split('&')[0];
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
   return (
     <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumbs (SEO Best Practice) */}
+      {/* Breadcrumbs */}
       <nav className="flex items-center text-xs text-gray-500 mb-6 font-medium uppercase tracking-wider">
-         <button onClick={() => onNavigate('/')} className="hover:text-red-600">Home</button>
+         <button onClick={() => onNavigate('/')} className="hover:text-red-600 transition-colors">Home</button>
          <ChevronRight className="h-3 w-3 mx-2" />
-         <button onClick={() => onNavigate('/category/' + article.category.toLowerCase().replace(' ', '-'))} className="hover:text-red-600">{article.category}</button>
+         <button onClick={() => onNavigate('/category/' + article.category.toLowerCase().replace(' ', '-'))} className="hover:text-red-600 transition-colors">{article.category}</button>
          <ChevronRight className="h-3 w-3 mx-2" />
          <span className="text-gray-400 truncate max-w-[200px]">{article.title}</span>
       </nav>
@@ -61,51 +73,69 @@ const ArticleDetail: React.FC<ArticleDetailProps> = ({ article, onNavigate }) =>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
             {article.platform && (
               <div className="absolute bottom-6 left-6 text-white">
-                <p className="text-xs uppercase font-bold tracking-widest opacity-80">Streaming on</p>
+                <p className="text-xs uppercase font-bold tracking-widest opacity-80">Main Platform</p>
                 <p className="text-2xl font-black">{article.platform}</p>
               </div>
             )}
           </div>
 
-          {/* Quick Info Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-100">
-             <div>
-               <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Release Date</p>
-               <p className="text-sm font-bold text-gray-900">{article.releaseDate}</p>
-             </div>
-             <div>
-               <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Language</p>
-               <p className="text-sm font-bold text-gray-900">{article.language.join(', ')}</p>
-             </div>
-             <div>
-               <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Director</p>
-               <p className="text-sm font-bold text-gray-900">{article.director}</p>
-             </div>
-             <div>
-               <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Genre</p>
-               <p className="text-sm font-bold text-gray-900">{article.genre.join(', ')}</p>
-             </div>
-          </div>
-
-          <div className="prose prose-lg prose-red max-w-none text-gray-700 leading-relaxed space-y-6">
+          <div className="prose prose-lg prose-red max-w-none text-gray-700 leading-relaxed space-y-8">
             <p className="text-xl font-medium text-gray-900 leading-relaxed italic border-l-4 border-red-200 pl-6">
               {article.excerpt}
             </p>
+            
             <div dangerouslySetInnerHTML={{ __html: article.content }} />
+
+            {/* Listicle Items Section */}
+            {article.movieList && article.movieList.length > 0 && (
+              <div className="mt-16 space-y-16">
+                 {article.movieList.map((item, index) => {
+                   const embedUrl = getEmbedUrl(item.videoUrl);
+                   return (
+                     <section key={item.id} className="relative bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="bg-gray-50 px-8 py-4 flex items-center justify-between border-b border-gray-100">
+                           <span className="text-sm font-black text-red-600 uppercase tracking-widest"># {index + 1}</span>
+                           <h2 className="text-2xl font-black text-gray-900 m-0 uppercase tracking-tighter">{item.title}</h2>
+                        </div>
+                        
+                        <div className="p-8">
+                           {item.imageUrl && (
+                             <div className="mb-8 rounded-2xl overflow-hidden shadow-lg aspect-video md:aspect-[21/9]">
+                                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                             </div>
+                           )}
+                           
+                           <div className="text-gray-700 leading-relaxed mb-8 whitespace-pre-wrap">
+                              {item.description}
+                           </div>
+
+                           {embedUrl && (
+                             <div className="space-y-4">
+                                <h3 className="text-lg font-bold flex items-center gap-2 m-0 uppercase tracking-widest text-gray-400">
+                                   <PlayCircle className="h-5 w-5 text-red-600" /> Watch Trailer
+                                </h3>
+                                <div className="aspect-video rounded-2xl overflow-hidden bg-black shadow-inner">
+                                   <iframe 
+                                      className="w-full h-full"
+                                      src={embedUrl}
+                                      title={item.title}
+                                      frameBorder="0"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                   ></iframe>
+                                </div>
+                             </div>
+                           )}
+                        </div>
+                     </section>
+                   );
+                 })}
+              </div>
+            )}
             
             <AdUnit type="infeed" />
 
-            <h2 className="text-2xl font-bold text-gray-900 mt-12 mb-6 uppercase tracking-tight">Why You Should Watch</h2>
-            <ul className="space-y-4 list-none p-0">
-               {['High production value', 'Stellar cast performances', 'Engaging screenplay', 'Must-watch for genre fans'].map((reason, i) => (
-                 <li key={i} className="flex items-start gap-3 bg-red-50 p-4 rounded-xl border border-red-100">
-                    <span className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
-                    <span className="font-medium text-red-900">{reason}</span>
-                 </li>
-               ))}
-            </ul>
-
-            {article.faqs && (
+            {article.faqs && article.faqs.length > 0 && (
               <div className="mt-16 bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
                  <div className="bg-gray-50 px-8 py-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-900 m-0 uppercase tracking-tighter">Frequently Asked Questions</h2>

@@ -14,6 +14,14 @@ export enum Platform {
   THEATRICAL = 'Theatrical'
 }
 
+export interface MovieListItem {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  videoUrl?: string;
+}
+
 export interface Article {
   id: string;
   slug: string;
@@ -33,6 +41,7 @@ export interface Article {
   faqs?: { q: string, a: string }[];
   trailerUrl?: string;
   rating?: string;
+  movieList?: MovieListItem[];
 }
 
 export interface SiteConfig {

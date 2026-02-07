@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Plus, Edit, Trash2, Save, X, LayoutDashboard, Settings, 
-  LogOut, CheckCircle, Globe, Users, HelpCircle, Film 
+  LogOut, CheckCircle, Globe, Users, HelpCircle, Film, Upload, Video, Image as ImageIcon
 } from 'lucide-react';
-import { Article, Category, Platform, SiteConfig } from '../types.ts';
+import { Article, Category, Platform, SiteConfig, MovieListItem } from '../types.ts';
 import { 
   getArticles, saveArticle, deleteArticle, 
   getSiteConfig, saveSiteConfig 
@@ -18,6 +18,7 @@ const AdminPanel: React.FC = () => {
   const [editingArticle, setEditingArticle] = useState<Partial<Article> | null>(null);
   const [view, setView] = useState<'list' | 'edit' | 'settings'>('list');
   const [successMsg, setSuccessMsg] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -51,9 +52,55 @@ const AdminPanel: React.FC = () => {
       director: '',
       imageUrl: '',
       publishedAt: new Date().toISOString(),
-      faqs: [{ q: '', a: '' }]
+      faqs: [{ q: '', a: '' }],
+      movieList: []
     });
     setView('edit');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        callback(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const addMovieItem = () => {
+    if (editingArticle) {
+      const newList = [...(editingArticle.movieList || [])];
+      if (newList.length >= 10) {
+        alert("Maximum 10 movies allowed per blog.");
+        return;
+      }
+      newList.push({
+        id: Date.now().toString(),
+        title: '',
+        description: '',
+        imageUrl: '',
+        videoUrl: ''
+      });
+      setEditingArticle({ ...editingArticle, movieList: newList });
+    }
+  };
+
+  const removeMovieItem = (id: string) => {
+    if (editingArticle) {
+      const newList = (editingArticle.movieList || []).filter(item => item.id !== id);
+      setEditingArticle({ ...editingArticle, movieList: newList });
+    }
+  };
+
+  const updateMovieItem = (id: string, field: keyof MovieListItem, value: string) => {
+    if (editingArticle) {
+      const newList = (editingArticle.movieList || []).map(item => 
+        item.id === id ? { ...item, [field]: value } : item
+      );
+      setEditingArticle({ ...editingArticle, movieList: newList });
+    }
   };
 
   const handleSaveArticle = (e: React.FormEvent) => {
@@ -96,7 +143,7 @@ const AdminPanel: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+        <form onSubmit={handleLogin} className="bg-white p-8 rounded-2xl shadow-2xl w-full max-md">
           <h2 className="text-2xl font-black text-gray-900 mb-6 text-center brand-font">CineStream Admin</h2>
           <div className="space-y-4">
             <input 
@@ -207,6 +254,7 @@ const AdminPanel: React.FC = () => {
             </div>
           ) : view === 'settings' ? (
             <form onSubmit={handleSaveSettings} className="space-y-8 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
+              {/* Settings Form Content (Omitted for brevity as same as before) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                  <div className="space-y-4 md:col-span-2">
                     <h3 className="text-lg font-bold flex items-center gap-2 border-b pb-2"><Globe className="h-5 w-5 text-red-600" /> General Site Identity</h3>
@@ -239,7 +287,6 @@ const AdminPanel: React.FC = () => {
                       onChange={(e) => setSiteConfig({...siteConfig, footerText: e.target.value})}
                     />
                  </div>
-
                  <div className="space-y-4 md:col-span-2">
                     <h3 className="text-lg font-bold flex items-center gap-2 border-b pb-2"><Users className="h-5 w-5 text-red-600" /> Social & Community Links</h3>
                  </div>
@@ -261,13 +308,12 @@ const AdminPanel: React.FC = () => {
           ) : (
             <form onSubmit={handleSaveArticle} className="space-y-8 bg-white p-8 rounded-3xl border border-gray-200 shadow-sm">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Basic SEO Fields */}
                 <div className="space-y-4 md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Content Title (Focus Keyword Here)</label>
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Content Title</label>
                   <input 
                     required
                     type="text" 
-                    placeholder="e.g. Pushpa 2 OTT Release Date Leaked?"
+                    placeholder="e.g. Top 10 Movies on Netflix this weekend"
                     className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-xl font-bold"
                     value={editingArticle?.title || ''}
                     onChange={(e) => {
@@ -280,171 +326,148 @@ const AdminPanel: React.FC = () => {
 
                 <div className="space-y-4">
                   <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Permalink / Slug</label>
-                  <input 
-                    required
-                    type="text" 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl font-mono text-xs"
-                    value={editingArticle?.slug || ''}
-                    onChange={(e) => setEditingArticle({...editingArticle!, slug: e.target.value})}
-                  />
+                  <input required type="text" className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl font-mono text-xs" value={editingArticle?.slug || ''} onChange={(e) => setEditingArticle({...editingArticle!, slug: e.target.value})} />
                 </div>
 
                 <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Main Category</label>
-                  <select 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl font-bold text-gray-700"
-                    value={editingArticle?.category}
-                    onChange={(e) => setEditingArticle({...editingArticle!, category: e.target.value as Category})}
-                  >
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Category</label>
+                  <select className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl" value={editingArticle?.category} onChange={(e) => setEditingArticle({...editingArticle!, category: e.target.value as Category})}>
                     <option value={Category.OTT}>OTT Releases</option>
                     <option value={Category.MOVIE}>Movie Releases</option>
                     <option value={Category.NEWS}>Cinema News</option>
                   </select>
                 </div>
 
-                <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Distribution Platform</label>
-                  <select 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.platform}
-                    onChange={(e) => setEditingArticle({...editingArticle!, platform: e.target.value as Platform})}
-                  >
-                    {Object.values(Platform).map(p => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Expected Release Date</label>
-                  <input 
-                    type="date" 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.releaseDate}
-                    onChange={(e) => setEditingArticle({...editingArticle!, releaseDate: e.target.value})}
-                  />
-                </div>
-
+                {/* Image Upload for Main Poster */}
                 <div className="space-y-4 md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Feature Image URL</label>
-                  <input 
-                    required
-                    type="text" 
-                    placeholder="https://..."
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.imageUrl || ''}
-                    onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})}
-                  />
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter flex items-center justify-between">
+                    <span>Main Feature Image</span>
+                    <span className="text-[10px] text-gray-400">Direct URL or Upload</span>
+                  </label>
+                  <div className="flex gap-4">
+                    <input 
+                      required
+                      type="text" 
+                      placeholder="https://..."
+                      className="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-xl"
+                      value={editingArticle?.imageUrl || ''}
+                      onChange={(e) => setEditingArticle({...editingArticle!, imageUrl: e.target.value})}
+                    />
+                    <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 p-4 rounded-xl flex items-center gap-2 text-sm font-bold">
+                      <Upload className="h-4 w-4" /> Upload
+                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => setEditingArticle({...editingArticle!, imageUrl: url}))} />
+                    </label>
+                  </div>
+                  {editingArticle?.imageUrl && (
+                    <div className="mt-2 h-32 w-full rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                       <img src={editingArticle.imageUrl} className="h-full w-full object-contain" alt="Preview" />
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-4 md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter flex items-center gap-2"><Users className="h-4 w-4" /> Cast & Crew (Comma separated)</label>
-                  <input 
-                    type="text" 
-                    placeholder="Allu Arjun, Rashmika Mandanna, Fahadh Faasil"
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.cast?.join(', ') || ''}
-                    onChange={(e) => updateListField('cast', e.target.value)}
-                  />
+                {/* Dynamic Movie List Builder */}
+                <div className="space-y-6 md:col-span-2 mt-10 p-6 bg-red-50/50 rounded-3xl border border-red-100/50">
+                   <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold flex items-center gap-2"><Film className="h-5 w-5 text-red-600" /> Movie Listicle Items (Up to 10)</h3>
+                      <button 
+                        type="button" 
+                        onClick={addMovieItem}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-red-700"
+                      >
+                        <Plus className="h-4 w-4" /> Add Item
+                      </button>
+                   </div>
+                   
+                   <div className="space-y-8">
+                      {editingArticle?.movieList?.map((item, index) => (
+                        <div key={item.id} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm relative group">
+                           <button 
+                            type="button" 
+                            onClick={() => removeMovieItem(item.id)}
+                            className="absolute -top-2 -right-2 bg-white text-gray-400 hover:text-red-600 p-1.5 rounded-full border border-gray-100 shadow-sm"
+                           >
+                             <X className="h-4 w-4" />
+                           </button>
+                           
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-4">
+                                 <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest flex items-center gap-1"><Edit className="h-3 w-3" /> Item #{index + 1} Title</label>
+                                 <input 
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"
+                                    value={item.title}
+                                    placeholder="Movie Title"
+                                    onChange={(e) => updateMovieItem(item.id, 'title', e.target.value)}
+                                 />
+                                 
+                                 <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest flex items-center gap-1"><Video className="h-3 w-3" /> YouTube Video URL</label>
+                                 <input 
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl font-mono text-xs"
+                                    value={item.videoUrl}
+                                    placeholder="https://youtube.com/watch?v=..."
+                                    onChange={(e) => updateMovieItem(item.id, 'videoUrl', e.target.value)}
+                                 />
+                              </div>
+
+                              <div className="space-y-4">
+                                 <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest flex items-center gap-1"><ImageIcon className="h-3 w-3" /> Item Image</label>
+                                 <div className="flex gap-2">
+                                    <input 
+                                      className="flex-1 p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs"
+                                      value={item.imageUrl}
+                                      placeholder="URL or Upload"
+                                      onChange={(e) => updateMovieItem(item.id, 'imageUrl', e.target.value)}
+                                    />
+                                    <label className="cursor-pointer bg-gray-100 p-3 rounded-xl flex items-center justify-center">
+                                      <Upload className="h-4 w-4 text-gray-500" />
+                                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => updateMovieItem(item.id, 'imageUrl', url))} />
+                                    </label>
+                                 </div>
+                                 {item.imageUrl && (
+                                   <div className="h-20 w-full rounded-lg overflow-hidden border border-gray-50">
+                                      <img src={item.imageUrl} className="h-full w-full object-cover" />
+                                   </div>
+                                 )}
+                              </div>
+
+                              <div className="md:col-span-2 space-y-4">
+                                 <label className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Description</label>
+                                 <textarea 
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl h-24 text-sm"
+                                    value={item.description}
+                                    placeholder="Explain why this movie is a must-watch..."
+                                    onChange={(e) => updateMovieItem(item.id, 'description', e.target.value)}
+                                 />
+                              </div>
+                           </div>
+                        </div>
+                      ))}
+                      
+                      {(!editingArticle.movieList || editingArticle.movieList.length === 0) && (
+                        <div className="text-center py-12 text-gray-400 italic border-2 border-dashed border-red-100 rounded-2xl">
+                           No movies in this list yet. Click "Add Item" to start building your blog.
+                        </div>
+                      )}
+                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Languages (Comma separated)</label>
-                  <input 
-                    type="text" 
-                    placeholder="Hindi, Telugu, Tamil"
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.language?.join(', ') || ''}
-                    onChange={(e) => updateListField('language', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Genres (Comma separated)</label>
-                  <input 
-                    type="text" 
-                    placeholder="Action, Thriller"
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl"
-                    value={editingArticle?.genre?.join(', ') || ''}
-                    onChange={(e) => updateListField('genre', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-4 md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Meta Description / Excerpt</label>
+                <div className="space-y-4 md:col-span-2 mt-10">
+                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Article Body (Global Introduction/Conclusion)</label>
                   <textarea 
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl h-24"
-                    placeholder="Brief summary for social sharing and search results..."
-                    value={editingArticle?.excerpt || ''}
-                    onChange={(e) => setEditingArticle({...editingArticle!, excerpt: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-4 md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 uppercase tracking-tighter">Article Body (HTML Supported)</label>
-                  <textarea 
                     required
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl h-96 font-sans text-base leading-relaxed"
-                    placeholder="Write your amazing story here..."
+                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl h-64 font-sans text-base leading-relaxed"
+                    placeholder="General content for the blog post..."
                     value={editingArticle?.content || ''}
                     onChange={(e) => setEditingArticle({...editingArticle!, content: e.target.value})}
                   />
-                </div>
-
-                <div className="space-y-4 md:col-span-2">
-                   <h3 className="text-lg font-bold flex items-center gap-2 border-b pb-2 mt-8"><HelpCircle className="h-5 w-5 text-red-600" /> FAQ Section</h3>
-                   <div className="space-y-4">
-                      {editingArticle?.faqs?.map((faq, idx) => (
-                        <div key={idx} className="flex gap-4 items-start bg-gray-50 p-4 rounded-xl border border-gray-100">
-                           <div className="flex-1 space-y-2">
-                              <input 
-                                placeholder="Question" 
-                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm font-bold"
-                                value={faq.q}
-                                onChange={(e) => {
-                                  const newFaqs = [...(editingArticle.faqs || [])];
-                                  newFaqs[idx].q = e.target.value;
-                                  setEditingArticle({...editingArticle, faqs: newFaqs});
-                                }}
-                              />
-                              <textarea 
-                                placeholder="Answer" 
-                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm h-20"
-                                value={faq.a}
-                                onChange={(e) => {
-                                  const newFaqs = [...(editingArticle.faqs || [])];
-                                  newFaqs[idx].a = e.target.value;
-                                  setEditingArticle({...editingArticle, faqs: newFaqs});
-                                }}
-                              />
-                           </div>
-                           <button 
-                            type="button"
-                            onClick={() => {
-                              const newFaqs = (editingArticle.faqs || []).filter((_, i) => i !== idx);
-                              setEditingArticle({...editingArticle, faqs: newFaqs});
-                            }}
-                            className="p-2 text-gray-400 hover:text-red-600"
-                           >
-                             <Trash2 className="h-4 w-4" />
-                           </button>
-                        </div>
-                      ))}
-                      <button 
-                        type="button" 
-                        onClick={() => setEditingArticle({...editingArticle!, faqs: [...(editingArticle?.faqs || []), {q: '', a: ''}]})}
-                        className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold hover:border-red-300 hover:text-red-400 transition-all flex items-center justify-center"
-                      >
-                        <Plus className="h-4 w-4 mr-2" /> Add FAQ Item
-                      </button>
-                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4 pt-12 border-t mt-12">
                 <button type="submit" className="flex-1 bg-red-600 text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center hover:bg-red-700 shadow-xl shadow-red-200 transition-all active:scale-95">
-                  <Save className="h-6 w-6 mr-2" /> Finalize & Publish
+                  <Save className="h-6 w-6 mr-2" /> Publish Now
                 </button>
                 <button type="button" onClick={() => setView('list')} className="px-10 bg-gray-100 text-gray-600 py-5 rounded-2xl font-bold hover:bg-gray-200 transition-all">
-                  Discard Draft
+                  Discard
                 </button>
               </div>
             </form>
