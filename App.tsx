@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Home from './views/Home';
-import ArticleDetail from './views/ArticleDetail';
-import AdminPanel from './views/Admin';
-import AdUnit from './components/AdUnit';
-import { getArticles, getSiteConfig } from './services/storage';
-import { Article, SiteConfig } from './types';
+import Navbar from './components/Navbar.tsx';
+import Footer from './components/Footer.tsx';
+import Home from './views/Home.tsx';
+import ArticleDetail from './views/ArticleDetail.tsx';
+import AdminPanel from './views/Admin.tsx';
+import AdUnit from './components/AdUnit.tsx';
+import { getArticles, getSiteConfig } from './services/storage.ts';
+import { Article, SiteConfig } from './types.ts';
 
 const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState(window.location.hash.replace('#', '') || '/');

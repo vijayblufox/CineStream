@@ -1,10 +1,10 @@
 
 import React, { useEffect } from 'react';
-import ArticleCard from '../components/ArticleCard';
-import Sidebar from '../components/Sidebar';
-import AdUnit from '../components/AdUnit';
-import { Article, Category } from '../types';
-import { updateSEOMeta } from '../services/storage';
+import ArticleCard from '../components/ArticleCard.tsx';
+import Sidebar from '../components/Sidebar.tsx';
+import AdUnit from '../components/AdUnit.tsx';
+import { Article, Category } from '../types.ts';
+import { updateSEOMeta } from '../services/storage.ts';
 
 interface HomeProps {
   articles: Article[];

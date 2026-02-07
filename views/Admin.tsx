@@ -4,11 +4,11 @@ import {
   Plus, Edit, Trash2, Save, X, LayoutDashboard, Settings, 
   LogOut, CheckCircle, Globe, Users, HelpCircle, Film 
 } from 'lucide-react';
-import { Article, Category, Platform, SiteConfig } from '../types';
+import { Article, Category, Platform, SiteConfig } from '../types.ts';
 import { 
   getArticles, saveArticle, deleteArticle, 
   getSiteConfig, saveSiteConfig 
-} from '../services/storage';
+} from '../services/storage.ts';
 
 const AdminPanel: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

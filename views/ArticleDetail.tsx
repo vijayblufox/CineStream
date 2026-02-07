@@ -1,10 +1,10 @@
 
 import React, { useEffect } from 'react';
 import { Calendar, Tag, Share2, MessageSquare, PlayCircle, ChevronRight } from 'lucide-react';
-import { Article, Category } from '../types';
-import Sidebar from '../components/Sidebar';
-import AdUnit from '../components/AdUnit';
-import { updateSEOMeta } from '../services/storage';
+import { Article, Category } from '../types.ts';
+import Sidebar from '../components/Sidebar.tsx';
+import AdUnit from '../components/AdUnit.tsx';
+import { updateSEOMeta } from '../services/storage.ts';
 
 interface ArticleDetailProps {
   article: Article;
